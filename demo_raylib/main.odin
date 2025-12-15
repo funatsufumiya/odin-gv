@@ -42,6 +42,7 @@ main :: proc() {
     defer raylib.CloseWindow()
 
     raylib.SetTargetFPS(i32(fps))
+    raylib.SetExitKey(.ESCAPE)
 
     frame_index := 0
     frame, err2 := gv.read_frame_compressed(video, u32(frame_index))
