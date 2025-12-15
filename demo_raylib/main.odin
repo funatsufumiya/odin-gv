@@ -47,10 +47,20 @@ main :: proc() {
     defer raylib.UnloadTexture(tex)
 
     frame_index := 0
+    frame, err2 := gv.read_frame(video, u32(frame_index))
+    defer delete(frame)
+
     for !raylib.WindowShouldClose() {
-        frame, err2 := gv.read_frame(video, u32(frame_index))
-        defer delete(frame)
+        // t1 := time.now()
+
+        if frame_index > 0 {
+            err2 = gv.read_frame_to(video, u32(frame_index), frame)
+        }
         
+        // t2 := time.now()
+        // diff := time.diff(t1, t2)
+        // fmt.println("read_frame elapsed sec:", time.duration_seconds(diff))
+
         if err2 != nil {
             raylib.TraceLog(.ERROR, "Failed to read frame")
             break
