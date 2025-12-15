@@ -8,6 +8,16 @@ gv_format_dxt1 :: 1
 gv_format_dxt3 :: 3
 gv_format_dxt5 :: 5
 
+File :: #type os.Handle
+
+FILE_END :: 2
+
+ReadFrameDxtOSError :: union {
+    ReadFrameError,
+    dxt_decoder.DxtDecodeError,
+    os.Error
+}
+
 ReadFrameError :: enum {
     OK,
     END_OF_VIDEO,
@@ -32,33 +42,46 @@ GVAddressSizeBlock :: struct {
 GVVideo :: struct {
     header              : GVHeader,
     address_size_blocks : []GVAddressSizeBlock,
-    file                : os.File,
+    file                : File,
 }
 
 // Read header from file
 // returns error at last paramter
-read_header :: proc(f: os.File) -> (GVHeader, bool) {
+read_header :: proc(f: File) -> (GVHeader, os.Error) {
     header := GVHeader{}
-    header.width = f.read_le[u32]()
-    header.height = f.read_le[u32]()
-    header.frame_count = f.read_le[u32]()
-    header.fps = f.read_le[f32]()
-    header.format = f.read_le[u32]()
-    header.frame_bytes = f.read_le[u32]()
-    return header
+    err : os.Error = nil
+    header.width, err = read_le_u32(f)
+    if err != nil { return {}, err }
+    header.height, err = read_le_u32(f)
+    if err != nil { return {}, err }
+    header.frame_count, err = read_le_u32(f)
+    if err != nil { return {}, err }
+    header.fps, err = read_le_f32(f)
+    if err != nil { return {}, err }
+    header.format, err = read_le_u32(f)
+    if err != nil { return {}, err }
+    header.frame_bytes, err = read_le_u32(f)
+    if err != nil { return {}, err }
+    return header, nil
 }
 
 // Read address/size blocks from file
 // returns error at last paramter
-read_address_size_blocks :: proc(f: os.File, frame_count: u32) -> ([]GVAddressSizeBlock, bool) {
+read_address_size_blocks :: proc(f: File, frame_count: u32, allocator := context.allocator) -> ([]GVAddressSizeBlock, os.Error) {
     blocks_len := int(frame_count)
-    blocks := [blocks_len]GVAddressSizeBlock{}
-    f.seek(-i64(frame_count * 16), .end)
-    for i in 0..<int(frame_count) {
-        blocks[i].address = f.read_le[u64]()
-        blocks[i].size = f.read_le[u64]()
+    blocks := make([]GVAddressSizeBlock, blocks_len, allocator)
+    _, err := os.seek(f, -i64(frame_count * 16), FILE_END)
+    if err != nil {
+        return {}, err
     }
-    return blocks
+    for i in 0..<int(frame_count) {
+        err2 : os.Error = nil
+        blocks[i].address, err2 = read_le_u64(f)
+        if err2 != nil { return {}, err2 }
+        blocks[i].size, err2 = read_le_u64(f)
+        if err2 != nil { return {}, err2 }
+    }
+    return blocks, nil
 }
 
 // Load GVVideo from file path
@@ -77,11 +100,10 @@ load_gvvideo :: proc(path: string) -> (GVVideo, bool) {
 
 // Read compressed frame (LZ4 decompress only, no DXT decode)
 // returns error at last paramter
-read_frame_compressed :: proc(v: GVVideo, frame_id: u32) -> ([]u8, ReadFrameError) {
+read_frame_compressed :: proc(v: GVVideo, frame_id: u32, allocator := context.allocator) -> ([]u8, ReadFrameError) {
     buf_len := int(v.header.frame_bytes)
-    buf : [buf_len]u8
-    buf = {}
-    err = read_frame_compressed_to(v, frame_id, buf)
+    buf := make([]u8, buf_len, allocator)
+    err := read_frame_compressed_to(v, frame_id, buf)
     if err != nil {
         return {}, err
     }
@@ -111,19 +133,22 @@ read_frame_compressed_to :: proc(v: GVVideo, frame_id: u32, buf: []u8) -> ReadFr
 
 // Read and decode frame to RGBA buffer
 // returns error at last paramter
-read_frame_to :: proc(v: GVVideo, frame_id: u32, buf: []u8) -> ReadFrameError {
+read_frame_to :: proc(v: GVVideo, frame_id: u32, buf: []u8) -> ReadFrameDxtOSError {
     if frame_id >= v.header.frame_count {
         return .END_OF_VIDEO
     }
     block := v.address_size_blocks[frame_id]
-    compressed := v.file.read_bytes_at(int(block.size), block.address)
+    compressed, err := read_bytes_at(v.file, int(block.size), block.address)
+    if err != nil {
+        return err
+    }
     width := int(v.header.width)
     height := int(v.header.height)
     uncompressed_size := int(v.header.frame_bytes)
-    decompressed : [uncompressed_size]u8
-    decompressed = {}
-    decompressed_size := lz4.lz_4_decompress_safe(&u8(compressed.data), &u8(decompressed.data),
-        compressed.len, uncompressed_size)
+    decompressed := make([]u8, uncompressed_size)
+    defer delete(decompressed)
+    decompressed_size := lz4.decompress_safe(raw_data(compressed), raw_data(decompressed),
+        i32(len(compressed)), i32(uncompressed_size))
     if decompressed_size < 0 {
         return .LZ4_DECOMPRESS_FAILED
     }
@@ -134,11 +159,14 @@ read_frame_to :: proc(v: GVVideo, frame_id: u32, buf: []u8) -> ReadFrameError {
     } else if v.header.format == gv_format_dxt5 {
         dxt_format = .DXT5
     }
-    decoded := dxt_decoder.decode(decompressed[0:uncompressed_size], width, height, dxt_format)
-    if buf.len < decoded.len {
+    decoded, err2 := dxt_decoder.decode(decompressed[0:uncompressed_size], width, height, dxt_format)
+    if err2 != nil {
+        return err2
+    }
+    if len(buf) < len(decoded) {
         return .BUFFER_TOO_SMALL
     }
-    for i in 0..<decoded.len {
+    for i in 0..<len(decoded) {
         buf[i] = decoded[i]
     }
 
@@ -147,13 +175,12 @@ read_frame_to :: proc(v: GVVideo, frame_id: u32, buf: []u8) -> ReadFrameError {
 
 // Read and decode frame, return RGBA []u8
 // returns error at last paramter
-read_frame :: proc(v: GVVideo, frame_id: u32) -> ([]u8, ReadFrameError) {
+read_frame :: proc(v: GVVideo, frame_id: u32, allocator := context.allocator) -> ([]u8, ReadFrameDxtOSError) {
     width := int(v.header.width)
     height := int(v.header.height)
     buf_len := width * height * 4
-    buf : [buf_len]u8
-    buf = {}
-    err = read_frame_to(v, frame_id, buf)
+    buf := make([]u8, buf_len, allocator)
+    err := read_frame_to(v, frame_id, buf)
     if err != nil {
         return {}, err
     }
