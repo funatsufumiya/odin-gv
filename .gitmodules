@@ -1,0 +1,3 @@
+[submodule "dxt_decoder"]
+	path = dxt_decoder
+	url = https://github.com/funatsufumiya/odin-dxt_decoder
