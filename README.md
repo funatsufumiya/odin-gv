@@ -4,6 +4,8 @@ GV Video ([Extreme Gpu Friendly Video Format](https://github.com/Ushio/ofxExtrem
 
 Forked from [v_gvvideo](https://github.com/funatsufumiya/v_gvvideo).
 
+![docs/screenshot.png](docs/screenshot.png)
+
 ## About
 
 This module provides **only decoder, not player** [^1].<br>
