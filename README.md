@@ -28,6 +28,8 @@ $ odin test tests
 $ odin run demo_raylib
 ```
 
+code: [demo_raylib/main.odin](./demo_raylib/main.odin)
+
 ## Usage notes
 
 - Please use `read_frame_compressed` instead of `read_frame` if your graphics framework supports GPU compressed texture uploading.
