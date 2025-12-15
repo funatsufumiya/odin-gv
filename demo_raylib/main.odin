@@ -6,13 +6,15 @@ import "vendor:raylib"
 import "core:time"
 import "core:mem"
 import "core:math"
+import "core:fmt"
 
 import example_util "./example_util"
 
 main :: proc() {
     example_util.debug_tracking_allocator_init()
     
-    gv_path := "test_asset/test-10px.gv"
+    // gv_path := "test_asset/test-10px.gv"
+    gv_path := "gv_asset_for_test/alpha-countdown-blue.gv"
     video, err := gv.load_gvvideo(gv_path)
     defer gv.delete_gvvideo(&video)
     if err != nil {
@@ -24,6 +26,10 @@ main :: proc() {
     height := int(video.header.height)
     frame_count := int(video.header.frame_count)
     fps := int(video.header.fps)
+
+    fmt.println("video size:", width, ",", height)
+    fmt.println("video frame count:", frame_count)
+    fmt.println("video fps:", fps)
 
     window_width := 640
     window_height := 480

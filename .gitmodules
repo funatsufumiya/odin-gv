@@ -4,3 +4,6 @@
 [submodule "lz4"]
 	path = lz4
 	url = https://github.com/funatsufumiya/odin-lz4
+[submodule "gv_asset_for_test"]
+	path = gv_asset_for_test
+	url = https://github.com/funatsufumiya/gv_asset_for_test
