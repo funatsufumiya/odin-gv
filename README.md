@@ -27,3 +27,8 @@ $ odin test tests
 ```bash
 $ odin run demo_raylib
 ```
+
+## Usage notes
+
+- Please use `read_frame_compressed` instead of `read_frame` if your graphics framework supports GPU compressed texture uploading.
+  - CPU DXT decoding of `read_frame` is just for test case or compatibility. Very slow. 
