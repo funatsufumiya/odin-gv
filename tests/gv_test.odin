@@ -26,6 +26,8 @@ assert_rgba :: proc(t: ^testing.T, got: []u8, want_r, want_g, want_b, want_a: u8
 test_gvvideo_read_header :: proc(t: ^testing.T) {
     gv_path := "test_asset/test-10px.gv"
     video, err := gv.load_gvvideo(gv_path)
+    defer gv.delete_gvvideo(&video)
+
     testing.expect_value(t, err, nil)
     w := int(video.header.width)
     h := int(video.header.height)
@@ -41,6 +43,8 @@ test_gvvideo_read_header :: proc(t: ^testing.T) {
 test_gvvideo_read_frame :: proc(t: ^testing.T) {
     gv_path := "test_asset/test-10px.gv"
     video, err := gv.load_gvvideo(gv_path)
+    defer gv.delete_gvvideo(&video)
+
     testing.expect_value(t, err, nil)
     w := int(video.header.width)
     h := int(video.header.height)
@@ -52,6 +56,8 @@ test_gvvideo_read_frame :: proc(t: ^testing.T) {
     testing.expect_value(t, video.header.frame_bytes, 72)
 
     frame, err2 := gv.read_frame(video, 3)
+    defer delete(frame)
+
     testing.expect_value(t, err2, nil)
     testing.expect_value(t, len(frame), w * h * 4)
 
@@ -65,8 +71,13 @@ test_gvvideo_read_frame :: proc(t: ^testing.T) {
 test_gvvideo_read_frame_at :: proc(t: ^testing.T) {
     gv_path := "test_asset/test-10px.gv"
     video, err := gv.load_gvvideo(gv_path)
+    defer gv.delete_gvvideo(&video)
+
     testing.expect_value(t, err, nil)
+
     frame, err2 := gv.read_frame(video, 0)
+    defer delete(frame)
+    
     testing.expect_value(t, err2, nil)
 
     assert_rgba(t, frame[0:4], 255, 0, 0, 255, "(0,0) should be red")

@@ -1,6 +1,7 @@
 package gv
 
 import "core:os"
+import "core:fmt"
 import dxt_decoder "./dxt_decoder"
 import "vendor:compress/lz4"
 
@@ -45,6 +46,16 @@ GVVideo :: struct {
     header              : GVHeader,
     address_size_blocks : []GVAddressSizeBlock,
     file                : File,
+}
+
+delete_gvvideo :: proc(v: ^GVVideo) {
+    delete(v.address_size_blocks)
+    err := os.close(v.file)
+    if err != nil {
+        fmt.eprintln("[Error] delete_gvvideo: ", err)
+
+        // just show error and ignore it now
+    }
 }
 
 // Read header from file
