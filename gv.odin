@@ -3,7 +3,7 @@ package gv
 import "core:os"
 import "core:fmt"
 import dxt_decoder "./dxt_decoder"
-import "vendor:compress/lz4"
+import lz4 "./lz4/lz4"
 
 gv_format_dxt1 :: 1
 gv_format_dxt3 :: 3
