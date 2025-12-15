@@ -2,12 +2,19 @@ package gv
 
 import "core:os"
 import "core:fmt"
+import "core:time"
 import dxt_decoder "./dxt_decoder"
 import lz4 "./lz4/lz4"
 
-gv_format_dxt1 :: 1
-gv_format_dxt3 :: 3
-gv_format_dxt5 :: 5
+// gv_format_dxt1 :: 1
+// gv_format_dxt3 :: 3
+// gv_format_dxt5 :: 5
+
+GVTextureFormat :: enum {
+    DXT1 = 1,
+    DXT3 = 3,
+    DXT5 = 5,
+}
 
 File :: #type os.Handle
 
@@ -33,7 +40,7 @@ GVHeader :: struct {
     height      : u32,
     frame_count : u32,
     fps         : f32,
-    format      : u32,
+    format      : GVTextureFormat,
     frame_bytes : u32,
 }
 
@@ -71,8 +78,10 @@ read_header :: proc(f: File) -> (GVHeader, os.Error) {
     if err != nil { return {}, err }
     header.fps, err = read_le_f32(f)
     if err != nil { return {}, err }
-    header.format, err = read_le_u32(f)
+    raw_format : u32
+    raw_format, err = read_le_u32(f)
     if err != nil { return {}, err }
+    header.format = GVTextureFormat(raw_format)
     header.frame_bytes, err = read_le_u32(f)
     if err != nil { return {}, err }
     return header, nil
@@ -143,8 +152,10 @@ read_frame_compressed_to :: proc(v: GVVideo, frame_id: u32, buf: []u8) -> ReadFr
         return .END_OF_VIDEO
     }
     block := v.address_size_blocks[frame_id]
+
     compressed, err := read_bytes_at(v.file, int(block.size), block.address)
     defer delete(compressed)
+
     if err != nil {
         return err
     }
@@ -167,9 +178,11 @@ read_frame_to :: proc(v: GVVideo, frame_id: u32, buf: []u8) -> ReadFrameDxtOsErr
     if frame_id >= v.header.frame_count {
         return .END_OF_VIDEO
     }
+
     block := v.address_size_blocks[frame_id]
     compressed, err := read_bytes_at(v.file, int(block.size), block.address)
     defer delete(compressed)
+
     if err != nil {
         return err
     }
@@ -178,16 +191,18 @@ read_frame_to :: proc(v: GVVideo, frame_id: u32, buf: []u8) -> ReadFrameDxtOsErr
     uncompressed_size := int(v.header.frame_bytes)
     decompressed := make([]u8, uncompressed_size)
     defer delete(decompressed)
+
     decompressed_size := lz4.decompress_safe(raw_data(compressed), raw_data(decompressed),
         i32(len(compressed)), i32(uncompressed_size))
     if decompressed_size < 0 {
         return .LZ4_DECOMPRESS_FAILED
     }
+
     // DXT decode
     dxt_format := dxt_decoder.DxtFormat.DXT1
-    if v.header.format == gv_format_dxt3 {
+    if v.header.format == .DXT3 {
         dxt_format = .DXT3
-    } else if v.header.format == gv_format_dxt5 {
+    } else if v.header.format == .DXT5 {
         dxt_format = .DXT5
     }
 

@@ -26,10 +26,12 @@ main :: proc() {
     height := int(video.header.height)
     frame_count := int(video.header.frame_count)
     fps := int(video.header.fps)
+    format := video.header.format
 
     fmt.println("video size:", width, ",", height)
     fmt.println("video frame count:", frame_count)
     fmt.println("video fps:", fps)
+    fmt.println("video format:", format)
 
     window_width := 640
     window_height := 480
