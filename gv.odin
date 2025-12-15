@@ -144,6 +144,7 @@ read_frame_compressed_to :: proc(v: GVVideo, frame_id: u32, buf: []u8) -> ReadFr
     }
     block := v.address_size_blocks[frame_id]
     compressed, err := read_bytes_at(v.file, int(block.size), block.address)
+    defer delete(compressed)
     if err != nil {
         return err
     }
@@ -168,6 +169,7 @@ read_frame_to :: proc(v: GVVideo, frame_id: u32, buf: []u8) -> ReadFrameDxtOsErr
     }
     block := v.address_size_blocks[frame_id]
     compressed, err := read_bytes_at(v.file, int(block.size), block.address)
+    defer delete(compressed)
     if err != nil {
         return err
     }
@@ -188,7 +190,10 @@ read_frame_to :: proc(v: GVVideo, frame_id: u32, buf: []u8) -> ReadFrameDxtOsErr
     } else if v.header.format == gv_format_dxt5 {
         dxt_format = .DXT5
     }
+
     decoded, err2 := dxt_decoder.decode(decompressed[0:uncompressed_size], width, height, dxt_format)
+    defer delete(decoded)
+
     if err2 != nil {
         return err2
     }

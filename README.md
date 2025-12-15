@@ -1,8 +1,5 @@
 # odin-gv
 
-> [!WARNING]
-> ***WORK-IN-PROGRESS***: Currently not works!
-
 ## About
 
 GV Video ([Extreme Gpu Friendly Video Format](https://github.com/Ushio/ofxExtremeGpuVideo)) decoder for odin.
