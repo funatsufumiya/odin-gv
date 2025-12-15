@@ -22,4 +22,8 @@ If you need encoder, please check [Original README of GV video](https://github.c
 $ odin test tests
 ```
 
+## Demo on Raylib
 
+```bash
+$ odin run demo_raylib
+```
