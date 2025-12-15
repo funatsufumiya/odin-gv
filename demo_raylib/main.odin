@@ -43,9 +43,6 @@ main :: proc() {
 
     raylib.SetTargetFPS(i32(fps))
 
-    // Create image here for speed
-    // img := raylib.GenImageColor(i32(width), i32(height), raylib.BLANK)
-
     frame_index := 0
     frame, err2 := gv.read_frame_compressed(video, u32(frame_index))
     defer delete(frame)
@@ -69,15 +66,6 @@ main :: proc() {
     }
     defer raylib.UnloadImage(img)
 
-    // switch format {
-    // case .DXT1:
-    //     raylib.ImageFormat(&img, .COMPRESSED_DXT1_RGBA)
-    // case .DXT3:
-    //     raylib.ImageFormat(&img, .COMPRESSED_DXT3_RGBA)
-    // case .DXT5:
-    //     raylib.ImageFormat(&img, .COMPRESSED_DXT5_RGBA)
-    // }
-
     tex := raylib.LoadTextureFromImage(img)
     defer raylib.UnloadTexture(tex)
 
@@ -98,10 +86,6 @@ main :: proc() {
         // t2 := time.now()
         // diff := time.diff(t1, t2)
         // fmt.println("read_frame elapsed sec:", time.duration_seconds(diff))
-
-
-        // mem.copy(img.data, raw_data(frame), len(frame))
-        // defer raylib.UpdateTexture(tex, img.data)
 
         scale_x := f32(window_width) / f32(width)
         scale_y := f32(window_height) / f32(height)
@@ -124,6 +108,5 @@ main :: proc() {
         raylib.EndDrawing()
 
         frame_index = (frame_index + 1) % frame_count
-        // time.sleep(time.Duration(f32(time.Second) / f32(fps)))
     }
 }
