@@ -64,7 +64,11 @@ main :: proc() {
         mipmaps = 1,
         format = pix_format
     }
-    defer raylib.UnloadImage(img)
+    defer {
+        if raylib.IsImageValid(img) && raylib.IsImageReady(img) {
+            raylib.UnloadImage(img)
+        }
+    }
 
     tex := raylib.LoadTextureFromImage(img)
     defer {
