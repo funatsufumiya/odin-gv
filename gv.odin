@@ -57,11 +57,13 @@ GVVideo :: struct {
 
 delete_gvvideo :: proc(v: ^GVVideo) {
     delete(v.address_size_blocks)
-    err := os.close(v.file)
-    if err != nil {
-        fmt.eprintln("[Error] delete_gvvideo: ", err)
+    if v.file != 0 {
+        err := os.close(v.file)
+        if err != nil {
+            fmt.eprintln("[Error] delete_gvvideo: ", err)
 
-        // just show error and ignore it now
+            // just show error and ignore it now
+        }
     }
 }
 
