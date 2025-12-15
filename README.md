@@ -1,8 +1,8 @@
 # odin-gv
 
-## About
-
 GV Video ([Extreme Gpu Friendly Video Format](https://github.com/Ushio/ofxExtremeGpuVideo)) decoder for odin.
+
+## About
 
 This module provides **only decoder, not player**.<br>
 (Player implementations should be separated for each graphic frameworks.)
@@ -19,3 +19,4 @@ If you need encoder, please check [Original README of GV video](https://github.c
 ```bash
 $ odin test tests
 ```
+
