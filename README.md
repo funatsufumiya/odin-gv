@@ -1,6 +1,6 @@
 # odin-gv
 
-GV Video ([Extreme Gpu Friendly Video Format](https://github.com/Ushio/ofxExtremeGpuVideo)) decoder for odin.
+GV Video ([Extreme Gpu Friendly Video Format](https://github.com/Ushio/ofxExtremeGpuVideo)) decoder for Odin language.
 
 ## About
 
@@ -19,4 +19,5 @@ If you need encoder, please check [Original README of GV video](https://github.c
 ```bash
 $ odin test tests
 ```
+
 
