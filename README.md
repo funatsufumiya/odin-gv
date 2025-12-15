@@ -1,7 +1,7 @@
 # odin-gv
 
 > [!WARNING]
-> ***WORK-IN-PROGRESS***
+> ***WORK-IN-PROGRESS***: Currently not works!
 
 ## About
 
@@ -15,4 +15,5 @@ If you need encoder, please check [Original README of GV video](https://github.c
 ## Dependencies
 
 - [funatsufumiya/odin-lz4](https://github.com/funatsufumiya/odin-lz4) (included as a git submodule)
+
 - [funatsufumiya/odin-dxt_decoder](https://github.com/funatsufumiya/odin-dxt_decoder) (included as a git submodule)
