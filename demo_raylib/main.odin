@@ -120,6 +120,7 @@ main :: proc() {
             scale,
             raylib.WHITE,
         )
+        raylib.DrawFPS(10, 10)
         raylib.EndDrawing()
 
         frame_index = (frame_index + 1) % frame_count
