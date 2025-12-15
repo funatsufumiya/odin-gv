@@ -2,6 +2,8 @@
 
 GV Video ([Extreme Gpu Friendly Video Format](https://github.com/Ushio/ofxExtremeGpuVideo)) decoder for Odin language.
 
+Forked from [v_gvvideo](https://github.com/funatsufumiya/v_gvvideo).
+
 ## About
 
 This module provides **only decoder, not player**.<br>
