@@ -49,6 +49,8 @@ main :: proc() {
     frame_index := 0
     for !raylib.WindowShouldClose() {
         frame, err2 := gv.read_frame(video, u32(frame_index))
+        defer delete(frame)
+        
         if err2 != nil {
             raylib.TraceLog(.ERROR, "Failed to read frame")
             break
