@@ -39,6 +39,13 @@ main :: proc() {
 
     raylib.SetTargetFPS(i32(fps))
 
+    // Create image here for speed
+    img := raylib.GenImageColor(i32(width), i32(height), raylib.BLANK)
+    defer raylib.UnloadImage(img)
+    raylib.ImageFormat(&img, .UNCOMPRESSED_R8G8B8A8)
+    tex := raylib.LoadTextureFromImage(img)
+    defer raylib.UnloadTexture(tex)
+
     frame_index := 0
     for !raylib.WindowShouldClose() {
         frame, err2 := gv.read_frame(video, u32(frame_index))
@@ -47,13 +54,8 @@ main :: proc() {
             break
         }
 
-        // RGBA8 → raylib.Image
-        img := raylib.GenImageColor(i32(width), i32(height), raylib.BLANK)
-        defer raylib.UnloadImage(img)
-        raylib.ImageFormat(&img, .UNCOMPRESSED_R8G8B8A8)
         mem.copy(img.data, raw_data(frame), width * height * 4)
-        tex := raylib.LoadTextureFromImage(img)
-        defer raylib.UnloadTexture(tex)
+        defer raylib.UpdateTexture(tex, img.data)
 
         scale_x := f32(window_width) / f32(width)
         scale_y := f32(window_height) / f32(height)
@@ -75,6 +77,6 @@ main :: proc() {
         raylib.EndDrawing()
 
         frame_index = (frame_index + 1) % frame_count
-        time.sleep(time.Duration(f32(time.Second) / f32(fps)))
+        // time.sleep(time.Duration(f32(time.Second) / f32(fps)))
     }
 }
