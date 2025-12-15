@@ -67,7 +67,11 @@ main :: proc() {
     defer raylib.UnloadImage(img)
 
     tex := raylib.LoadTextureFromImage(img)
-    defer raylib.UnloadTexture(tex)
+    defer {
+        if raylib.IsTextureValid(tex) && raylib.IsTextureReady(tex) {
+            raylib.UnloadTexture(tex)
+        }
+    }
 
     for !raylib.WindowShouldClose() {
         // t1 := time.now()
